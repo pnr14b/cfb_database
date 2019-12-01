@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CFB</title>
+    <script src="js/jquery-3.4.1.min.js" type="text/javascript"></script>
+
+    <style>
+      table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      td,
+      th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+      }
+
+      tr:nth-child(even) {
+        background-color: #dddddd;
+      }
+    </style>
+
+    <style>
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+      input[type="submit"] {
+        width: 100%;
+        background-color: #4caf50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #45a049;
+      }
+
+      div {
+        border-radius: 5px;
+        background-color: #f2f2f2;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CFB Database!</h1>
+
+    <form id="myform">
+      <div>Enter Two Team Names and the Seasons to get matchup results:</div>
+      <div id="warning" hidden>
+        Warning! .mp3 file will take a while to process.
+      </div>
+      <label about="Team1">C1</label>
+      <input type="text" name="C1" required />
+      <label about="Team2">C2</label>
+      <input type="text" name="C2" />
+      <label about="Team1">Season</label>
+      <input type="text" name="Season" required />
+
+      <input type="submit" id="submit" />
+    </form>
+
+    {# Log success/failure messages for users #}
+    <div id="log"></div>
+
+    <script src="js/confmatchups.js?v=12" type="text/javascript"></script>
+
+    <table style="table-layout:fixed" id="mytable">
+      <tr>
+        <th>Home Team</th>
+        <th>Away Team</th>
+        <th>Winner</th>
+        <th>Season</th>
+      </tr>
+    </table>
+  </body>
+</html>

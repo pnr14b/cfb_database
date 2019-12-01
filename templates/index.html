@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CFB</title>
+    <script src="js/jquery-3.4.1.min.js" type="text/javascript"></script>
+
+    <style>
+      table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      td,
+      th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+      }
+
+      tr:nth-child(even) {
+        background-color: #dddddd;
+      }
+    </style>
+
+    <style>
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+      input[type="submit"] {
+        width: 100%;
+        background-color: #4caf50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #45a049;
+      }
+
+      div {
+        border-radius: 5px;
+        background-color: #f2f2f2;
+        padding: 20px;
+      }
+    </style>
+
+    <style>
+      .btn-group input {
+        background-color: #ff00bf; /* Green background */
+        border: 1px solid #13040f; /* Green border */
+        color: white; /* White text */
+        padding: 10px 24px; /* Some padding */
+        cursor: pointer; /* Pointer/hand icon */
+        float: left; /* Float the buttons side by side */
+      }
+
+      /* Clear floats (clearfix hack) */
+      .btn-group:after {
+        content: "";
+        clear: both;
+        display: table;
+      }
+
+      .btn-group button:not(:last-child) {
+        border-right: none; /* Prevent double borders */
+      }
+
+      /* Add a background color on hover */
+      .btn-group button:hover {
+        background-color: #ff00bf;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CFB Database!</h1>
+
+    <div class="btn-group">
+      <input type="button" onclick="location.href='venue';" value="Venues" />
+
+      <input type="button" onclick="location.href='teams';" value="Teams" />
+
+      <input type="button" onclick="location.href='roster';" value="Roster" />
+
+      <input
+        type="button"
+        onclick="location.href='conference_matchups';"
+        value="Conference Matchups"
+      />
+    </div>
+    <form id="myform">
+      <div>Enter Two Team Names and the Seasons to get matchup results:</div>
+      <div id="warning" hidden>
+        Warning! .mp3 file will take a while to process.
+      </div>
+      <label about="Team1">Team1</label>
+      <input type="text" name="Team1" required />
+      <label about="Team2">Team2</label>
+      <input type="text" name="Team2" />
+      <label about="Season1">Season1</label>
+      <input type="text" name="Season1" required />
+      <label about="Season2">Season2</label>
+      <input type="text" name="Season2" required />
+      <input type="submit" id="submit" />
+    </form>
+
+    {# Log success/failure messages for users #}
+    <div id="log"></div>
+
+    <script src="js/index.js?v=11" type="text/javascript"></script>
+
+    <table style="table-layout:fixed" align="left" id="mytable">
+      <tr>
+        <th>Home Team</th>
+        <th>Away Team</th>
+        <th>Week</th>
+        <th>Season</th>
+        <th>Winner</th>
+        <th>Venue</th>
+      </tr>
+    </table>
+  </body>
+</html>
