@@ -71,7 +71,8 @@ $("form").submit(function(event) {
         tr.append("<td>" + json[i].hometeam + "</td>");
         tr.append("<td>" + json[i].awayteam + "</td>");
         tr.append("<td>" + json[i].winner + "</td>");
-
+        tr.append("<td>" + json[i].season + "</td>");
+        tr.append("<td>" + json[i].week + "</td>");
         $("#mytable").append(tr);
       }
     },

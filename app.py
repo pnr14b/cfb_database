@@ -5,7 +5,7 @@ import sqlite3
 from sqlite3 import Error
 import pandas as pd
 
-f = r"cfb_db"
+f = r"cfb_database"
 app = Flask(__name__)
 app.config['JS'] = "static/js"
 app.config['FAVICON'] = "static"
@@ -51,8 +51,19 @@ def getMatchup():
     conn = create_connection(f)
     query = "SELECT * FROM MATCHUP WHERE ((hometeam = ? AND awayteam = ?) OR (hometeam = ? AND awayteam = ?) ) AND (season >= ? AND season <= ?) ORDER BY season,week  "
     conn.execute(query, (team1, team2, team2, team1, year1, year2))
-    rows = conn.fetchall()
-    return json.dumps([dict(ix) for ix in rows])
+    results = conn.fetchall()
+
+    ind_wins = "SELECT COUNT(winner) FROM MATCHUP WHERE ((hometeam = ? AND awayteam = ?) OR (hometeam = ? AND awayteam = ?) ) AND (season >= ? AND season <= ?) AND (winner = ?) ORDER BY season,week  "
+
+    conn.execute(ind_wins, (team1, team2, team2, team1, year1, year2, team1))
+    t1_wins = conn.fetchall()
+    conn.execute(ind_wins, (team1, team2, team2, team1, year1, year2, team2))
+
+    t2_wins = conn.fetchall()
+    t1w = t1_wins[0][0]
+    t2w = t2_wins[0][0]
+
+    return json.dumps([{"hometeam": t1w, "awayteam": t2w}]+[dict(ix) for ix in results] + totalStats(team1, team2, year1, year2))
 
 
 @app.route('/teams', methods=['GET'])
@@ -109,14 +120,35 @@ def conference_matchups():
     c1 = request.args.get('c1')
     c2 = request.args.get('c2')
     s = request.args.get('season')
+    s2 = request.args.get('season2')
     if not c1:
         return render_template("confmatchups.html")
+
+    if c1 not in ['ACC', 'SEC', 'B1G', 'PAC', 'B12']:
+        conn = create_connection(f)
+        query = """
+        SELECT MATCHUP.hometeam,MATCHUP.awayteam,MATCHUP.winner,MATCHUP.season 
+        FROM MATCHUP 
+        WHERE season >= ?  AND season <= ? AND 
+        (
+            (
+                hometeam = ?  AND awayteam IN (SELECT School FROM TEAM WHERE Conference = ?)
+            )
+        OR 
+            (
+                awayteam = ?  AND hometeam IN (SELECT School FROM TEAM WHERE Conference = ?)
+            ) 
+        )
+        """
+        conn.execute(query, (s, s2, c1, c2, c1, c2))
+        rows = conn.fetchall()
+        return json.dumps([dict(ix) for ix in rows])
 
     conn = create_connection(f)
     query = """
     SELECT MATCHUP.hometeam,MATCHUP.awayteam,MATCHUP.winner,MATCHUP.season 
     FROM MATCHUP 
-    WHERE season = ? AND 
+    WHERE season >= ? AND season<= ? AND
     (
         (   hometeam IN (SELECT School FROM TEAM WHERE Conference = ?) AND 
             awayteam IN (SELECT School FROM TEAM WHERE Conference = ?)  
@@ -127,10 +159,38 @@ def conference_matchups():
              awayteam IN (SELECT School FROM TEAM WHERE Conference = ?)  
         ) 
     ) 
+    ORDER BY season,hometeam,awayteam
     """
-    conn.execute(query, (s, c1, c2, c2, c1))
+    conn.execute(query, (s, s2, c1, c2, c2, c1))
     rows = conn.fetchall()
     return json.dumps([dict(ix) for ix in rows])
+
+
+@app.route('/stats')
+def stats():
+
+    id = request.args.get('id')
+
+    query = """ SELECT * FROM STATS WHERE game_id = ?; """
+    conn = create_connection(f)
+    conn.execute(query, (id,))
+    rows = conn.fetchall()
+
+    return json.dumps([dict(ix) for ix in rows])
+
+
+def totalStats(t1, t2, y1, y2):
+    query1 = "SELECT team,SUM(yards) AS totyards,SUM(points) AS totpoints ,SUM(passingTDs) AS totpassingTDs,SUM(rushingTDs) AS totrushingTDs FROM STATS WHERE team = ? AND game_id IN (SELECT id FROM MATCHUP WHERE ((hometeam = ? AND awayteam = ?) OR (hometeam = ? AND awayteam = ?) ) AND (season >= ? AND season <= ?) ) "
+    conn = create_connection(f)
+    conn.execute(query1, (t1, t1, t2, t2, t1, y1, y2))
+    rows = conn.fetchall()
+
+    conn.execute(query1, (t2, t1, t2, t2, t1, y1, y2))
+    rows2 = conn.fetchall()
+
+    v = [[dict(ix) for ix in rows] + [dict(ix) for ix in rows2]]
+    print(v)
+    return v
 
 
 @app.route('/')

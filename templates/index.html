@@ -9,7 +9,7 @@
       table {
         font-family: arial, sans-serif;
         border-collapse: collapse;
-        width: 100%;
+        width: 75%;
       }
 
       td,
@@ -102,17 +102,19 @@
       />
     </div>
     <form id="myform">
-      <div>Enter Two Team Names and the Seasons to get matchup results:</div>
-      <div id="warning" hidden>
-        Warning! .mp3 file will take a while to process.
+      <div>
+        Enter one team to retrieve information about all games played by that
+        team. Enter two teams for head to head matchup info between those two
+        teams. *Required
       </div>
-      <label about="Team1">Team1</label>
+
+      <label about="Team1">Team1*</label>
       <input type="text" name="Team1" required />
       <label about="Team2">Team2</label>
       <input type="text" name="Team2" />
-      <label about="Season1">Season1</label>
+      <label about="Season1">Season1*</label>
       <input type="text" name="Season1" required />
-      <label about="Season2">Season2</label>
+      <label about="Season2">Season2*</label>
       <input type="text" name="Season2" required />
       <input type="submit" id="submit" />
     </form>
@@ -120,9 +122,9 @@
     {# Log success/failure messages for users #}
     <div id="log"></div>
 
-    <script src="js/index.js?v=11" type="text/javascript"></script>
+    <script src="js/index.js?v=1j1000w0=-03" type="text/javascript"></script>
 
-    <table style="table-layout:fixed" align="left" id="mytable">
+    <table style="table-layout:fixed" id="mytable" class="floatLeft">
       <tr>
         <th>Home Team</th>
         <th>Away Team</th>
@@ -130,7 +132,33 @@
         <th>Season</th>
         <th>Winner</th>
         <th>Venue</th>
+        <th>STATS</th>
       </tr>
     </table>
+
+    <div id="popup" class="float: right">
+      <table style="table-layout:fixed" id="mytable2">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>Points</th>
+            <th>Yards</th>
+            <th>Passing TDS</th>
+            <th>Rushing TDS</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <table style="table-layout:fixed" id="mytable3">
+        <tr>
+          <th>Team</th>
+          <th>Total Points</th>
+          <th>Total Yards</th>
+          <th>Total Passing TDS</th>
+          <th>Total Rushing TDS</th>
+        </tr>
+      </table>
+    </div>
   </body>
 </html>

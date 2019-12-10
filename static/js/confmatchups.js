@@ -5,31 +5,32 @@ const warning = $("#warning");
 const table = $("#mytable");
 
 // Whenever this form has a submit event,
-$("form").submit(function(event) {
+$("#myform").submit(function(event) {
   // prevent form from redirecting/making a request and do this instead
   event.preventDefault();
   var t1 = event.currentTarget[0].value;
 
   var t2 = event.currentTarget[1].value;
   var t3 = event.currentTarget[2].value;
+  var t4 = event.currentTarget[3].value;
   $.ajax({
     url: "conference_matchups",
     data: {
       c1: t1,
       c2: t2,
-      season: t3
+      season: t3,
+      season2: t4
     },
     cache: false,
     type: "GET",
     beforeSend: function() {
-      log.text(" is being uploaded. Please wait.");
       //submit.prop("disabled", true);
-      console.log(t2);
     },
     success: function(response) {
       console.log(response);
       json = JSON.parse(response);
       var tr;
+
       for (var i = 0; i < json.length; i++) {
         tr = $("<tr/>");
         tr.append("<td>" + json[i].hometeam + "</td>");

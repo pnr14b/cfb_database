@@ -56,7 +56,6 @@ $("form").submit(function(event) {
     cache: false,
     type: "GET",
     beforeSend: function() {
-      log.text(" is being uploaded. Please wait.");
       //submit.prop("disabled", true);
     },
     success: function(response) {

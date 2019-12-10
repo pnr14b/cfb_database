@@ -5,7 +5,7 @@ from sqlite3 import Error
 import pandas as pd
 
 base = "http://api.collegefootballdata.com/"
-f = r"cfb_db"
+f = r"cfb_database"
 
 
 def create_connection(db_file):
@@ -69,7 +69,8 @@ def insert(conn, home, away, week, season):
     conn.commit()
 
 
-def get_posts(conn, query):
+def get_posts(query):
+    conn = create_connection(f)
     x = pd.read_sql_query(query, conn)
 
     pd.set_option('display.max_rows', len(x))
@@ -80,31 +81,57 @@ def get_posts(conn, query):
     print(x)
 
 
-# """ def insertVenue():
-#     venues = json.loads(requests.get(base+"venues").content)
-#     sql_create_venue_table = """ CREATE TABLE IF NOT EXISTS VENUE(
-#     name text,
-#     capacity integer,
-#     location text,
+def insertStats():
+    sql_create_stats_table = """ CREATE TABLE IF NOT EXISTS STATS (
+                                        team text,
+                                        game_id integer,
+                                        yards integer,
+                                        points integer,
+                                        passingTDs integer,
+                                        rushingTDs integer,
+                                        PRIMARY KEY(game_id,team),
+                                        FOREIGN KEY (team) REFERENCES TEAM(School)
 
-#     PRIMARY KEY(name, location)
-# )
-# """
-#     conn = create_connection(f)
-#     create_table(conn, sql_create_venue_table)
-#     sql = "INSERT INTO VENUE (name,capacity,location) VALUES(?,?,?)"
-#     cur = conn.cursor()
+                                    ); """
 
-#     for v in venues:
-#         name = v['name']
-#         cap = v['capacity']
-#         loc = v['city']+","+v['state']
-#         try:
-#             cur.execute(sql, (name, cap, loc))
-#         except sqlite3.IntegrityError as e:
-#             pass
-#         conn.commit()
-#     get_posts(conn, "SELECT * FROM VENUE") """
+    conn = create_connection(f)
+    create_table(conn, sql_create_stats_table)
+
+    query = "SELECT season,id FROM MATCHUP WHERE season>=2004;"
+    c = conn.cursor()
+    c.execute(query)
+    rows = c.fetchall()
+
+    sql = "INSERT INTO STATS (team,game_id,yards,points,passingTDs,rushingTDs) VALUES(?,?,?,?,?,?)"
+    for y, id in rows:
+        stats = json.loads(requests.get(base+"games/teams",
+                                        params=[('year', int(y)), ('gameId', int(id))]).content)
+
+        try:
+            for t in stats[0]['teams']:
+                school = t['school']
+                points = t['points']
+                yards = 0
+                passingTDs = 0
+                rushingTDs = 0
+                for cat in t['stats']:
+                    if cat['category'] == "totalYards":
+                        yards = cat['stat']
+
+                    if cat['category'] == 'rushingTDs':
+                        rushingTDs = cat['stat']
+
+                    if cat['category'] == 'passingTDs':
+                        passingTDs = cat['stat']
+
+                c.execute(sql, (school, id, yards, points,
+                                passingTDs, rushingTDs))
+                conn.commit()
+
+        except IndexError as e:
+            print(y, id)
+        except sqlite3.IntegrityError as R:
+            pass
 
 
 def insert_teams():
@@ -166,14 +193,6 @@ def insert_teams():
                         pass
                     conn.commit()
 
-    get_posts(conn, "SELECT * FROM TEAM;")
-    get_posts(conn, "SELECT * FROM ROSTER;")
-
-    # games = requests.get(base+'games',params=[('year',str(season)),('team',school)]).content
-    # for g in json.loads(games):
-    # print(":".join([g['home_team'],g['away_team'], str(g['week']), str(g['season'])] ))
-    #       insert(conn,g['home_team'],g['away_team'],str(g['week']),str(g['season']))
-
 
 def insertVenue():
     venues = json.loads(requests.get(base+"venues").content)
@@ -199,8 +218,6 @@ def insertVenue():
         except sqlite3.IntegrityError as e:
             pass
 
-    get_posts(conn, "SELECT * FROM VENUE")
-
 
 def insert_matchups(season):
     sql_create_matchup_table = """ CREATE TABLE IF NOT EXISTS MATCHUP (
@@ -210,7 +227,8 @@ def insert_matchups(season):
                                         season integer,
                                         venue text,
                                         winner text,
-                                        PRIMARY KEY(hometeam,awayteam,week,season),
+                                        id integer,
+                                        PRIMARY KEY(id),
                                         FOREIGN KEY (hometeam) REFERENCES TEAM(School),
                                         FOREIGN KEY (awayteam) REFERENCES TEAM(School),
                                         FOREIGN KEY (winner) REFERENCES TEAM(School),
@@ -219,7 +237,7 @@ def insert_matchups(season):
 
     conn = create_connection(f)
     create_table(conn, sql_create_matchup_table)
-    sql = "INSERT INTO MATCHUP (hometeam,awayteam,week,season,venue,winner) VALUES(?,?,?,?,?,?)"
+    sql = "INSERT INTO MATCHUP (hometeam,awayteam,week,season,venue,winner,id) VALUES(?,?,?,?,?,?,?)"
     cur = conn.cursor()
     conferences = json.loads(requests.get(base+"conferences").content)
 
@@ -244,13 +262,16 @@ def insert_matchups(season):
                     venue = g['venue']
                     hp = int(g['home_points'])
                     ap = int(g['away_points'])
+                    id = int(g['id'])
+
                     if hp > ap:
                         winner = ht
                     else:
                         winner = at
 
                     try:
-                        cur.execute(sql, (ht, at, week, season, venue, winner))
+                        cur.execute(
+                            sql, (ht, at, week, season, venue, winner, id))
                         conn.commit()
                     except sqlite3.IntegrityError as e:
                         pass
@@ -272,11 +293,7 @@ if __name__ == "__main__":
     insertVenue()
     insert_teams()
 
-    for i in range(2000, 2019):
+    for i in range(1990, 2019):
         insert_matchups(i)
-    # get_posts(create_connection(file),"SELECT * FROM MATCHUP;")
-    # for i in range(2000,2010):
-    #   insertgames(conn,i)
-
-    # get_posts(conn)
-    create_connection(f).close()
+        print("Inserted matchups for year", i)
+    insertStats()
